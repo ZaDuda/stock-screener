@@ -170,11 +170,13 @@ let results = [];
 async function api(path, params, key){
   const q = new URLSearchParams({...params, apikey:key});
   const res = await fetch(`${BASE}/${path}?${q}`);
-  if (res.status === 401 || res.status === 403) throw new Error('FMP rejected the request (' + res.status + '). Check that the API key is correct and active.');
-  if (res.status === 429) throw new Error('FMP rate limit reached (429). The free plan allows about 250 calls per day. Try a smaller scan, or wait and retry.');
-  if (!res.ok) throw new Error('FMP error ' + res.status);
+  const tag = `[${path}]`;
+  if (res.status === 402) throw new Error(`${tag} FMP returned 402: this endpoint isn't included in your current plan.`);
+  if (res.status === 401 || res.status === 403) throw new Error(`${tag} FMP rejected the request (${res.status}). Check that the API key is correct and active.`);
+  if (res.status === 429) throw new Error(`${tag} FMP rate limit reached (429). The free plan allows about 250 calls per day. Try a smaller scan, or wait and retry.`);
+  if (!res.ok) throw new Error(`${tag} FMP error ${res.status}`);
   const data = await res.json();
-  if (data && data['Error Message']) throw new Error(data['Error Message']);
+  if (data && data['Error Message']) throw new Error(`${tag} ${data['Error Message']}`);
   return data;
 }
 
@@ -281,8 +283,8 @@ async function runScreen(){
         if (!inRange(c.roe, ...f.roe)) return;
         final.push(c);
       } catch(e) {
+        if (!note) note = e.message + ' Some details (ROE, description) may be missing.';
         if (f.roe[0] == null && f.roe[1] == null) final.push(c);  // keep it if ROE isn't being filtered
-        else if (!note) note = e.message;
       }
     }, n => setProgress(`Loading company details… ${n}/${survivors.length}`, 65 + 35 * n / Math.max(1, survivors.length)));
 
