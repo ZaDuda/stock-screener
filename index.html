@@ -6,942 +6,365 @@
 <title>Stock Screener</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
-
-  :root {
-    --bg: #0f1117;
-    --surface: #181c27;
-    --surface2: #1e2333;
-    --border: #2a3045;
-    --accent: #4f8ef7;
-    --accent2: #7c5cfc;
-    --green: #22c55e;
-    --red: #ef4444;
-    --text: #e8eaf0;
-    --muted: #7a82a0;
-    --label: #a0a8c0;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Inter', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
-
-  header {
-    padding: 28px 40px 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: baseline;
-    gap: 16px;
-  }
-
-  header h1 {
-    font-size: 18px;
-    font-weight: 600;
-    letter-spacing: -0.3px;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  header span {
-    font-size: 12px;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-  }
-
-  .layout {
-    display: grid;
-    grid-template-columns: 300px 1fr;
-    min-height: calc(100vh - 65px);
-  }
-
-  /* SIDEBAR */
-  .sidebar {
-    padding: 24px 20px;
-    border-right: 1px solid var(--border);
-    overflow-y: auto;
-  }
-
-  .api-block {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 14px;
-    margin-bottom: 24px;
-  }
-
-  .api-block label {
-    font-size: 10px;
-    font-family: 'DM Mono', monospace;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    display: block;
-    margin-bottom: 8px;
-  }
-
-  .api-block input {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 8px 10px;
-    font-size: 12px;
-    font-family: 'DM Mono', monospace;
-    color: var(--text);
-    outline: none;
-  }
-
-  .api-block input:focus { border-color: var(--accent); }
-
-  .section-title {
-    font-size: 10px;
-    font-family: 'DM Mono', monospace;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 12px;
-    margin-top: 20px;
-  }
-
-  .filter-group {
-    margin-bottom: 14px;
-  }
-
-  .filter-label {
-    font-size: 12px;
-    color: var(--label);
-    margin-bottom: 6px;
-    display: flex;
-    justify-content: space-between;
-  }
-
-  .filter-label span {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--accent);
-  }
-
-  .range-inputs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-  }
-
-  .range-inputs input {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 7px 8px;
-    font-size: 12px;
-    font-family: 'DM Mono', monospace;
-    color: var(--text);
-    width: 100%;
-    outline: none;
-  }
-
-  .range-inputs input:focus { border-color: var(--accent); }
-  .range-inputs input::placeholder { color: var(--muted); }
-
-  select {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 8px 10px;
-    font-size: 12px;
-    color: var(--text);
-    outline: none;
-    cursor: pointer;
-  }
-
-  select:focus { border-color: var(--accent); }
-
-  .run-btn {
-    width: 100%;
-    margin-top: 24px;
-    padding: 12px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    letter-spacing: 0.2px;
-    transition: opacity 0.15s;
-  }
-
-  .run-btn:hover { opacity: 0.88; }
-  .run-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  /* MAIN */
-  .main {
-    padding: 24px 32px;
-    overflow-y: auto;
-  }
-
-  .toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-
-  .result-count {
-    font-size: 12px;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-  }
-
-  .result-count strong { color: var(--accent); }
-
-  .sort-select {
-    width: auto;
-    padding: 6px 10px;
-    font-size: 12px;
-  }
-
-  /* EMPTY STATE */
-  .empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 60vh;
-    color: var(--muted);
-    gap: 12px;
-    text-align: center;
-  }
-
-  .empty .icon {
-    font-size: 40px;
-    opacity: 0.4;
-  }
-
-  .empty p { font-size: 14px; line-height: 1.6; }
-
-  /* LOADING */
-  .loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 60vh;
-    gap: 16px;
-    color: var(--muted);
-  }
-
-  .spinner {
-    width: 32px;
-    height: 32px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ERROR */
-  .error-box {
-    background: rgba(239,68,68,0.08);
-    border: 1px solid rgba(239,68,68,0.3);
-    border-radius: 8px;
-    padding: 16px;
-    color: var(--red);
-    font-size: 13px;
-    margin-bottom: 20px;
-  }
-
-  /* RESULTS GRID */
-  .results-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 14px;
-  }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 18px;
-    transition: border-color 0.15s;
-    cursor: pointer;
-  }
-
-  .card:hover { border-color: var(--accent); }
-
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 10px;
-  }
-
-  .ticker {
-    font-family: 'DM Mono', monospace;
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--accent);
-  }
-
-  .company-name {
-    font-size: 13px;
-    color: var(--text);
-    font-weight: 500;
-    margin-top: 2px;
-  }
-
-  .sector-badge {
-    font-size: 10px;
-    font-family: 'DM Mono', monospace;
-    padding: 3px 8px;
-    border-radius: 20px;
-    background: var(--surface2);
-    color: var(--label);
-    border: 1px solid var(--border);
-    white-space: nowrap;
-  }
-
-  .description {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.55;
-    margin-bottom: 14px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .metrics {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-
-  .metric {
-    background: var(--surface2);
-    border-radius: 6px;
-    padding: 8px;
-    text-align: center;
-  }
-
-  .metric-label {
-    font-size: 9px;
-    font-family: 'DM Mono', monospace;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
-  }
-
-  .metric-value {
-    font-size: 13px;
-    font-family: 'DM Mono', monospace;
-    font-weight: 500;
-    color: var(--text);
-  }
-
-  .metric-value.good { color: var(--green); }
-  .metric-value.bad { color: var(--red); }
-
-  .card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid var(--border);
-  }
-
-  .price {
-    font-family: 'DM Mono', monospace;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text);
-  }
-
-  .change {
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    font-weight: 500;
-  }
-
-  .change.up { color: var(--green); }
-  .change.down { color: var(--red); }
-
-  .market-cap {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-  }
-
-  /* MODAL */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .modal-overlay.open { display: flex; }
-
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 28px;
-    max-width: 560px;
-    width: 90%;
-    max-height: 85vh;
-    overflow-y: auto;
-    position: relative;
-  }
-
-  .modal-close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    width: 28px;
-    height: 28px;
-    color: var(--muted);
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .modal h2 {
-    font-size: 20px;
-    margin-bottom: 4px;
-  }
-
-  .modal .modal-sub {
-    font-size: 13px;
-    color: var(--muted);
-    margin-bottom: 16px;
-  }
-
-  .modal-desc {
-    font-size: 13px;
-    color: var(--label);
-    line-height: 1.6;
-    margin-bottom: 20px;
-    padding: 14px;
-    background: var(--surface2);
-    border-radius: 8px;
-    border-left: 3px solid var(--accent);
-  }
-
-  .modal-metrics {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-
-  .modal-metric {
-    background: var(--surface2);
-    border-radius: 8px;
-    padding: 12px;
-    text-align: center;
-  }
-
-  .modal-metric .label {
-    font-size: 10px;
-    font-family: 'DM Mono', monospace;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 6px;
-  }
-
-  .modal-metric .value {
-    font-size: 16px;
-    font-family: 'DM Mono', monospace;
-    font-weight: 500;
-  }
-
-  .modal-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--accent);
-    text-decoration: none;
-    font-family: 'DM Mono', monospace;
-  }
-
-  .modal-link:hover { text-decoration: underline; }
-
-  /* CHECKBOX for exchange */
-  .exchange-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 6px;
-  }
-
-  .ex-chip {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 5px 10px;
-    font-size: 11px;
-    font-family: 'DM Mono', monospace;
-    color: var(--label);
-    cursor: pointer;
-    user-select: none;
-    transition: border-color 0.12s;
-  }
-
-  .ex-chip.active {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: rgba(79,142,247,0.08);
-  }
-
-  .ex-chip input { display: none; }
-
+  :root{--bg:#0f1117;--surface:#181c27;--surface2:#1e2333;--border:#2a3045;--accent:#4f8ef7;--accent2:#7c5cfc;--green:#22c55e;--red:#ef4444;--text:#e8eaf0;--muted:#7a82a0;--label:#a0a8c0}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  header{padding:22px 32px 16px;border-bottom:1px solid var(--border);display:flex;align-items:baseline;gap:16px}
+  header h1{font-size:18px;font-weight:600;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  header span{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace}
+  .layout{display:grid;grid-template-columns:290px 1fr;min-height:calc(100vh - 62px)}
+  .sidebar{padding:20px 16px;border-right:1px solid var(--border);overflow-y:auto}
+  .box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:16px}
+  .tiny{font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+  .box .tiny{display:block;margin-bottom:8px}
+  .hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5}
+  input,select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 8px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text);outline:none}
+  .box input{background:var(--bg)}
+  select{font-family:'Inter',sans-serif;padding:8px 10px;cursor:pointer}
+  input:focus,select:focus{border-color:var(--accent)}
+  input::placeholder{color:var(--muted)}
+  .sec{margin:18px 0 10px}
+  .fg{margin-bottom:12px}
+  .fl{font-size:12px;color:var(--label);margin-bottom:5px;display:flex;justify-content:space-between}
+  .fl em{font-style:normal;font-family:'DM Mono',monospace;font-size:11px;color:var(--accent)}
+  .rg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .run{width:100%;margin-top:18px;padding:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+  .run:disabled{opacity:.45;cursor:not-allowed}
+  .main{padding:20px 28px}
+  .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px}
+  .count{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace}
+  .count strong{color:var(--accent)}
+  .toolbar select{width:auto}
+  .state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:55vh;color:var(--muted);gap:12px;text-align:center;font-size:14px;line-height:1.6}
+  .state .ic{font-size:40px;opacity:.4}
+  .spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .bar{width:260px;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:width .2s}
+  .err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:14px;color:var(--red);font-size:13px;margin-bottom:18px;line-height:1.5}
+  .note{background:rgba(79,142,247,.07);border:1px solid rgba(79,142,247,.25);border-radius:8px;padding:10px 14px;color:var(--label);font-size:12px;margin-bottom:18px;line-height:1.5}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;cursor:pointer;transition:border-color .15s}
+  .card:hover{border-color:var(--accent)}
+  .ch{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:8px}
+  .tk{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--accent)}
+  .nm{font-size:13px;font-weight:500;margin-top:2px}
+  .badge{font-size:10px;font-family:'DM Mono',monospace;padding:3px 8px;border-radius:20px;background:var(--surface2);color:var(--label);border:1px solid var(--border);white-space:nowrap}
+  .desc{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .ms{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .m{background:var(--surface2);border-radius:6px;padding:8px;text-align:center}
+  .m b{display:block;font-size:9px;font-family:'DM Mono',monospace;font-weight:400;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+  .m span{font-size:13px;font-family:'DM Mono',monospace;font-weight:500}
+  .good{color:var(--green)}.bad{color:var(--red)}
+  .cf{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-family:'DM Mono',monospace}
+  .pr{font-size:14px;font-weight:500}
+  .cf small{font-size:11px;color:var(--muted)}
+  .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center}
+  .ov.open{display:flex}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;max-width:560px;width:90%;max-height:85vh;overflow-y:auto;position:relative}
+  .x{position:absolute;top:16px;right:16px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;width:28px;height:28px;color:var(--muted);font-size:15px;cursor:pointer}
+  .modal h2{font-size:20px;margin-bottom:4px;padding-right:36px}
+  .sub{font-size:13px;color:var(--muted);margin-bottom:16px}
+  .mdesc{font-size:13px;color:var(--label);line-height:1.6;margin-bottom:20px;padding:14px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent)}
+  .mm{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+  .mm div{background:var(--surface2);border-radius:8px;padding:12px;text-align:center}
+  .mm b{display:block;font-size:10px;font-family:'DM Mono',monospace;font-weight:400;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+  .mm span{font-size:15px;font-family:'DM Mono',monospace;font-weight:500}
+  .links a{font-size:12px;color:var(--accent);text-decoration:none;font-family:'DM Mono',monospace;margin-right:16px}
+  .links a:hover{text-decoration:underline}
+  @media(max-width:760px){.layout{grid-template-columns:1fr}.sidebar{border-right:none;border-bottom:1px solid var(--border)}}
 </style>
 </head>
 <body>
-
-<header>
-  <h1>Stock Screener</h1>
-  <span>powered by Financial Modeling Prep</span>
-</header>
+<header><h1>Stock Screener</h1><span>powered by Financial Modeling Prep</span></header>
 
 <div class="layout">
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-
-    <div class="api-block">
-      <label>FMP API Key</label>
-      <input type="password" id="apiKey" placeholder="Enter your API key…" />
-    </div>
-
-    <div class="section-title">Filters</div>
-
-    <!-- Sector -->
-    <div class="filter-group">
-      <div class="filter-label">Sector</div>
-      <select id="sector">
-        <option value="">All Sectors</option>
-        <option value="Consumer Defensive">Consumer Defensive</option>
-        <option value="Consumer Cyclical">Consumer Cyclical</option>
-        <option value="Healthcare">Healthcare</option>
-        <option value="Technology">Technology</option>
-        <option value="Industrials">Industrials</option>
-        <option value="Financial Services">Financial Services</option>
-        <option value="Energy">Energy</option>
-        <option value="Basic Materials">Basic Materials</option>
-        <option value="Real Estate">Real Estate</option>
-        <option value="Utilities">Utilities</option>
-        <option value="Communication Services">Communication Services</option>
-      </select>
-    </div>
-
-    <!-- Country -->
-    <div class="filter-group">
-      <div class="filter-label">Country / Market</div>
-      <select id="country">
-        <option value="">Global (All)</option>
-        <option value="US">United States</option>
-        <option value="GB">United Kingdom</option>
-        <option value="DE">Germany</option>
-        <option value="FR">France</option>
-        <option value="JP">Japan</option>
-        <option value="CN">China</option>
-        <option value="CA">Canada</option>
-        <option value="AU">Australia</option>
-        <option value="IN">India</option>
-      </select>
-    </div>
-
-    <div class="section-title">Valuation</div>
-
-    <div class="filter-group">
-      <div class="filter-label">P/E Ratio <span id="lbl-pe">—</span></div>
-      <div class="range-inputs">
-        <input type="number" id="pe-min" placeholder="Min" oninput="updateLabel('pe','pe-min','pe-max')">
-        <input type="number" id="pe-max" placeholder="Max" oninput="updateLabel('pe','pe-min','pe-max')">
-      </div>
-    </div>
-
-    <div class="filter-group">
-      <div class="filter-label">P/B Ratio <span id="lbl-pb">—</span></div>
-      <div class="range-inputs">
-        <input type="number" id="pb-min" placeholder="Min" oninput="updateLabel('pb','pb-min','pb-max')">
-        <input type="number" id="pb-max" placeholder="Max" oninput="updateLabel('pb','pb-min','pb-max')">
-      </div>
-    </div>
-
-    <div class="filter-group">
-      <div class="filter-label">EV/EBITDA <span id="lbl-ev">—</span></div>
-      <div class="range-inputs">
-        <input type="number" id="ev-min" placeholder="Min" oninput="updateLabel('ev','ev-min','ev-max')">
-        <input type="number" id="ev-max" placeholder="Max" oninput="updateLabel('ev','ev-min','ev-max')">
-      </div>
-    </div>
-
-    <div class="section-title">Quality</div>
-
-    <div class="filter-group">
-      <div class="filter-label">ROE % <span id="lbl-roe">—</span></div>
-      <div class="range-inputs">
-        <input type="number" id="roe-min" placeholder="Min" oninput="updateLabel('roe','roe-min','roe-max')">
-        <input type="number" id="roe-max" placeholder="Max" oninput="updateLabel('roe','roe-min','roe-max')">
-      </div>
-    </div>
-
-    <div class="filter-group">
-      <div class="filter-label">Net Profit Margin % <span id="lbl-npm">—</span></div>
-      <div class="range-inputs">
-        <input type="number" id="npm-min" placeholder="Min" oninput="updateLabel('npm','npm-min','npm-max')">
-        <input type="number" id="npm-max" placeholder="Max" oninput="updateLabel('npm','npm-min','npm-max')">
-      </div>
-    </div>
-
-    <div class="section-title">Safety</div>
-
-    <div class="filter-group">
-      <div class="filter-label">Dividend Yield % <span id="lbl-dy">—</span></div>
-      <div class="range-inputs">
-        <input type="number" id="dy-min" placeholder="Min" oninput="updateLabel('dy','dy-min','dy-max')">
-        <input type="number" id="dy-max" placeholder="Max" oninput="updateLabel('dy','dy-min','dy-max')">
-      </div>
-    </div>
-
-    <div class="filter-group">
-      <div class="filter-label">Market Cap (USD B) <span id="lbl-mc">—</span></div>
-      <div class="range-inputs">
-        <input type="number" id="mc-min" placeholder="Min" oninput="updateLabel('mc','mc-min','mc-max')">
-        <input type="number" id="mc-max" placeholder="Max" oninput="updateLabel('mc','mc-min','mc-max')">
-      </div>
-    </div>
-
-    <button class="run-btn" onclick="runScreen()">Run Screen</button>
-
-  </aside>
-
-  <!-- MAIN -->
-  <main class="main">
-    <div class="toolbar">
-      <div class="result-count" id="resultCount"></div>
-      <select class="sort-select" id="sortBy" onchange="renderResults()">
-        <option value="marketCap">Sort: Market Cap</option>
-        <option value="peRatio">Sort: P/E (low→high)</option>
-        <option value="dividendYield">Sort: Dividend Yield</option>
-        <option value="returnOnEquity">Sort: ROE</option>
-      </select>
-    </div>
-
-    <div id="mainContent">
-      <div class="empty">
-        <div class="icon">📊</div>
-        <p>Set your filters and run the screen<br>to find undervalued companies.</p>
-      </div>
-    </div>
-  </main>
-</div>
-
-<!-- MODAL -->
-<div class="modal-overlay" id="modal" onclick="closeModal(event)">
-  <div class="modal">
-    <button class="modal-close" onclick="document.getElementById('modal').classList.remove('open')">✕</button>
-    <div id="modalContent"></div>
+<aside class="sidebar">
+  <div class="box">
+    <label class="tiny" for="apiKey">FMP API key *</label>
+    <input type="password" id="apiKey" placeholder="Required…" autocomplete="off">
+    <div class="hint">Saved only in this browser. Free key at financialmodelingprep.com</div>
   </div>
+
+  <div class="tiny sec">Universe</div>
+  <div class="fg"><div class="fl">Sector</div>
+    <select id="sector">
+      <option value="">All sectors</option>
+      <option>Consumer Defensive</option><option>Consumer Cyclical</option><option>Healthcare</option>
+      <option>Technology</option><option>Industrials</option><option>Financial Services</option>
+      <option>Energy</option><option>Basic Materials</option><option>Real Estate</option>
+      <option>Utilities</option><option>Communication Services</option>
+    </select></div>
+  <div class="fg"><div class="fl">Country</div>
+    <select id="country">
+      <option value="">Global (all)</option>
+      <option value="US">United States</option><option value="GB">United Kingdom</option>
+      <option value="DE">Germany</option><option value="FR">France</option><option value="JP">Japan</option>
+      <option value="CN">China</option><option value="CA">Canada</option><option value="AU">Australia</option>
+      <option value="IN">India</option><option value="CH">Switzerland</option><option value="NL">Netherlands</option>
+    </select></div>
+  <div class="fg"><div class="fl">Companies to scan <em id="scanLbl"></em></div>
+    <select id="scan">
+      <option value="25">25 (fastest)</option>
+      <option value="50" selected>50</option>
+      <option value="100">100</option>
+      <option value="200">200</option>
+    </select>
+    <div class="hint">Largest by market cap first. Each scanned company uses 1 API call, plus 2 more for each that passes your filters.</div></div>
+
+  <div class="tiny sec">Valuation</div>
+  <div id="f-valuation"></div>
+  <div class="tiny sec">Quality</div>
+  <div id="f-quality"></div>
+  <div class="tiny sec">Income &amp; size</div>
+  <div id="f-income"></div>
+
+  <button class="run" id="runBtn" onclick="runScreen()">Run screen</button>
+</aside>
+
+<main class="main">
+  <div class="toolbar">
+    <div class="count" id="count"></div>
+    <select id="sortBy" onchange="render()">
+      <option value="marketCap">Sort: market cap</option>
+      <option value="pe">Sort: P/E (low → high)</option>
+      <option value="pb">Sort: P/B (low → high)</option>
+      <option value="dy">Sort: dividend yield</option>
+      <option value="roe">Sort: ROE</option>
+    </select>
+  </div>
+  <div id="content"><div class="state"><div class="ic">📊</div><p>Set your filters and run the screen<br>to find undervalued companies.</p></div></div>
+</main>
 </div>
+
+<div class="ov" id="ov" onclick="if(event.target===this)closeModal()"><div class="modal"><button class="x" onclick="closeModal()">✕</button><div id="mc"></div></div></div>
 
 <script>
-let allResults = [];
+const BASE = 'https://financialmodelingprep.com/stable';
+const CACHE_TTL = 24 * 3600 * 1000;   // reuse fetched ratios for 24h to save API calls
+const RANGES = {
+  'f-valuation': [['pe','P/E ratio'],['pb','P/B ratio'],['ev','EV/EBITDA']],
+  'f-quality':   [['roe','ROE %'],['npm','Net profit margin %']],
+  'f-income':    [['dy','Dividend yield %'],['mc','Market cap (USD B)']]
+};
+for (const [box, items] of Object.entries(RANGES)) {
+  document.getElementById(box).innerHTML = items.map(([k,l]) => `
+    <div class="fg"><div class="fl">${l} <em id="l-${k}"></em></div>
+      <div class="rg">
+        <input type="number" id="${k}-min" placeholder="Min" oninput="lbl('${k}')">
+        <input type="number" id="${k}-max" placeholder="Max" oninput="lbl('${k}')">
+      </div></div>`).join('');
+}
+function lbl(k){
+  const a=v(k+'-min'), b=v(k+'-max'), el=document.getElementById('l-'+k);
+  el.textContent = a!=null&&b!=null ? `${a}–${b}` : a!=null ? `≥ ${a}` : b!=null ? `≤ ${b}` : '';
+}
+function v(id){ const x=document.getElementById(id).value; return x===''?null:parseFloat(x); }
+function esc(s){ return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-function updateLabel(key, minId, maxId) {
-  const min = document.getElementById(minId).value;
-  const max = document.getElementById(maxId).value;
-  const lbl = document.getElementById('lbl-' + key);
-  if (min && max) lbl.textContent = `${min}–${max}`;
-  else if (min) lbl.textContent = `≥ ${min}`;
-  else if (max) lbl.textContent = `≤ ${max}`;
-  else lbl.textContent = '—';
+try { document.getElementById('apiKey').value = localStorage.getItem('fmpKey') || ''; } catch(e){}
+
+let results = [];
+
+/* ---------- API helpers ---------- */
+async function api(path, params, key){
+  const q = new URLSearchParams({...params, apikey:key});
+  const res = await fetch(`${BASE}/${path}?${q}`);
+  if (res.status === 401 || res.status === 403) throw new Error('FMP rejected the request (' + res.status + '). Check that the API key is correct and active.');
+  if (res.status === 429) throw new Error('FMP rate limit reached (429). The free plan allows about 250 calls per day. Try a smaller scan, or wait and retry.');
+  if (!res.ok) throw new Error('FMP error ' + res.status);
+  const data = await res.json();
+  if (data && data['Error Message']) throw new Error(data['Error Message']);
+  return data;
 }
 
-function getVal(id) {
-  const v = document.getElementById(id).value;
-  return v === '' ? null : parseFloat(v);
+async function cached(path, symbol, key){
+  const ck = `fmp:${path}:${symbol}`;
+  try {
+    const raw = localStorage.getItem(ck);
+    if (raw) { const o = JSON.parse(raw); if (Date.now()-o.t < CACHE_TTL) return o.d; }
+  } catch(e){}
+  const data = await api(path, {symbol}, key);
+  const d = Array.isArray(data) ? (data[0] || {}) : (data || {});
+  try { localStorage.setItem(ck, JSON.stringify({t:Date.now(), d})); } catch(e){}
+  return d;
 }
 
-async function runScreen() {
-  const apiKey = document.getElementById('apiKey').value.trim();
-  if (!apiKey) {
-    alert('Please enter your FMP API key first.');
-    return;
+async function pool(items, size, fn, onTick){
+  let i = 0, done = 0;
+  async function worker(){
+    while (i < items.length) {
+      const idx = i++;
+      await fn(items[idx], idx);
+      onTick && onTick(++done);
+    }
   }
+  await Promise.all(Array.from({length: size}, worker));
+}
 
-  const btn = document.querySelector('.run-btn');
-  btn.disabled = true;
-  btn.textContent = 'Screening…';
+const inRange = (val, min, max) => {
+  if (min == null && max == null) return true;
+  if (val == null || isNaN(val)) return false;
+  return (min == null || val >= min) && (max == null || val <= max);
+};
 
-  document.getElementById('mainContent').innerHTML = `
-    <div class="loading">
-      <div class="spinner"></div>
-      <span>Fetching results…</span>
-    </div>`;
-  document.getElementById('resultCount').innerHTML = '';
+function setProgress(text, pct){
+  document.getElementById('content').innerHTML =
+    `<div class="state"><div class="spinner"></div><span>${esc(text)}</span><div class="bar"><i style="width:${pct}%"></i></div></div>`;
+}
 
-  // Build query params
-  const params = new URLSearchParams();
-  params.append('apikey', apiKey);
+/* ---------- main screen ---------- */
+async function runScreen(){
+  const key = document.getElementById('apiKey').value.trim();
+  if (!key) { showError('Enter your FMP API key to continue.'); return; }
+  try { localStorage.setItem('fmpKey', key); } catch(e){}
 
-  const sector = document.getElementById('sector').value;
-  if (sector) params.append('sector', sector);
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true; btn.textContent = 'Screening…';
+  document.getElementById('count').innerHTML = '';
+  results = [];
 
-  const country = document.getElementById('country').value;
-  if (country) params.append('country', country);
-
-  const peMin = getVal('pe-min'); if (peMin !== null) params.append('peMoreThan', peMin);
-  const peMax = getVal('pe-max'); if (peMax !== null) params.append('peLowerThan', peMax);
-  const pbMin = getVal('pb-min'); if (pbMin !== null) params.append('priceToBookMoreThan', pbMin);
-  const pbMax = getVal('pb-max'); if (pbMax !== null) params.append('priceToBookLowerThan', pbMax);
-  const roeMin = getVal('roe-min'); if (roeMin !== null) params.append('returnOnEquityMoreThan', roeMin / 100);
-  const roeMax = getVal('roe-max'); if (roeMax !== null) params.append('returnOnEquityLowerThan', roeMax / 100);
-  const npmMin = getVal('npm-min'); if (npmMin !== null) params.append('netProfitMarginMoreThan', npmMin / 100);
-  const npmMax = getVal('npm-max'); if (npmMax !== null) params.append('netProfitMarginLowerThan', npmMax / 100);
-  const dyMin = getVal('dy-min'); if (dyMin !== null) params.append('dividendMoreThan', dyMin / 100);
-  const dyMax = getVal('dy-max'); if (dyMax !== null) params.append('dividendLowerThan', dyMax / 100);
-  const mcMin = getVal('mc-min'); if (mcMin !== null) params.append('marketCapMoreThan', mcMin * 1e9);
-  const mcMax = getVal('mc-max'); if (mcMax !== null) params.append('marketCapLowerThan', mcMax * 1e9);
-
-  const evMin = getVal('ev-min');
-  const evMax = getVal('ev-max');
-
-  params.append('limit', 100);
+  const f = {
+    pe:[v('pe-min'),v('pe-max')], pb:[v('pb-min'),v('pb-max')], ev:[v('ev-min'),v('ev-max')],
+    roe:[v('roe-min'),v('roe-max')], npm:[v('npm-min'),v('npm-max')],
+    dy:[v('dy-min'),v('dy-max')], mc:[v('mc-min'),v('mc-max')]
+  };
+  const limit = parseInt(document.getElementById('scan').value, 10);
+  let note = '';
 
   try {
-    const url = `https://financialmodelingprep.com/api/v3/stock-screener?${params.toString()}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`API error: ${res.status}`);
-    let data = await res.json();
+    // 1) Universe from the screener (server-side: sector, country, market cap)
+    setProgress('Finding companies…', 3);
+    const sp = { isEtf:'false', isFund:'false', isActivelyTrading:'true', limit };
+    const sector = document.getElementById('sector').value;
+    const country = document.getElementById('country').value;
+    if (sector) sp.sector = sector;
+    if (country) sp.country = country;
+    if (f.mc[0] != null) sp.marketCapMoreThan = f.mc[0] * 1e9;
+    if (f.mc[1] != null) sp.marketCapLowerThan = f.mc[1] * 1e9;
+    const universe = await api('company-screener', sp, key);
+    if (!Array.isArray(universe) || universe.length === 0) { results = []; render(); return; }
 
-    if (!Array.isArray(data)) throw new Error(data?.['Error Message'] || 'Unexpected API response');
+    // 2) Ratios for each candidate -> filter on P/E, P/B, EV/EBITDA, margin, yield
+    const survivors = [];
+    let firstErr = null;
+    await pool(universe, 5, async (c) => {
+      try {
+        const r = await cached('ratios-ttm', c.symbol, key);
+        const m = {
+          pe:  r.priceToEarningsRatioTTM ?? r.peRatioTTM ?? null,
+          pb:  r.priceToBookRatioTTM ?? null,
+          ev:  r.enterpriseValueMultipleTTM ?? null,
+          npm: r.netProfitMarginTTM != null ? r.netProfitMarginTTM * 100 : null,
+          dy:  r.dividendYieldTTM != null ? r.dividendYieldTTM * 100 : null
+        };
+        if (!inRange(m.pe, ...f.pe) || !inRange(m.pb, ...f.pb) || !inRange(m.ev, ...f.ev) ||
+            !inRange(m.npm, ...f.npm) || !inRange(m.dy, ...f.dy)) return;
+        survivors.push({...c, ...m});
+      } catch(e) { if (!firstErr) firstErr = e; }
+    }, n => setProgress(`Checking valuation ratios… ${n}/${universe.length}`, 5 + 60 * n / universe.length));
+    if (firstErr && survivors.length === 0) throw firstErr;
+    if (firstErr) note = firstErr.message + ' Some companies were skipped.';
 
-    // Client-side EV/EBITDA filter if set
-    if (evMin !== null || evMax !== null) {
-      data = data.filter(c => {
-        if (!c.enterpriseValueEbitdaRatio) return false;
-        if (evMin !== null && c.enterpriseValueEbitdaRatio < evMin) return false;
-        if (evMax !== null && c.enterpriseValueEbitdaRatio > evMax) return false;
-        return true;
-      });
-    }
+    // 3) Enrich survivors: ROE (+EV/EBITDA fallback) and company profile
+    const final = [];
+    await pool(survivors, 5, async (c) => {
+      try {
+        const [k, p] = await Promise.all([cached('key-metrics-ttm', c.symbol, key), cached('profile', c.symbol, key)]);
+        c.roe = k.returnOnEquityTTM != null ? k.returnOnEquityTTM * 100 : null;
+        if (c.ev == null) c.ev = k.evToEBITDATTM ?? null;
+        c.description = p.description || '';
+        c.website = p.website || '';
+        c.industry = p.industry || c.industry || '';
+        c.companyName = p.companyName || c.companyName || c.symbol;
+        c.price = p.price ?? c.price;
+        if (!inRange(c.roe, ...f.roe)) return;
+        final.push(c);
+      } catch(e) {
+        if (f.roe[0] == null && f.roe[1] == null) final.push(c);  // keep it if ROE isn't being filtered
+        else if (!note) note = e.message;
+      }
+    }, n => setProgress(`Loading company details… ${n}/${survivors.length}`, 65 + 35 * n / Math.max(1, survivors.length)));
 
-    allResults = data;
-    renderResults();
-  } catch (err) {
-    document.getElementById('mainContent').innerHTML = `
-      <div class="error-box">⚠️ ${err.message}. Check your API key or try again.</div>`;
+    results = final;
+    render(note || `Scanned ${universe.length} companies (largest by market cap first). Widen "Companies to scan" to look further down the list.`);
+  } catch(e) {
+    showError(e.message || 'Something went wrong. Please try again.');
   } finally {
-    btn.disabled = false;
-    btn.textContent = 'Run Screen';
+    btn.disabled = false; btn.textContent = 'Run screen';
   }
 }
 
-function renderResults() {
-  const sortKey = document.getElementById('sortBy').value;
-  const sorted = [...allResults].sort((a, b) => {
-    if (sortKey === 'peRatio') return (a.peRatio || 9999) - (b.peRatio || 9999);
-    if (sortKey === 'dividendYield') return (b.dividendYield || 0) - (a.dividendYield || 0);
-    if (sortKey === 'returnOnEquity') return (b.returnOnEquity || 0) - (a.returnOnEquity || 0);
+function showError(msg){
+  document.getElementById('content').innerHTML = `<div class="err">⚠️ ${esc(msg)}</div>`;
+}
+
+/* ---------- rendering ---------- */
+const n1 = x => x != null ? Number(x).toFixed(1) : '—';
+const n2 = x => x != null ? Number(x).toFixed(2) : '—';
+const pc = (x,d=1) => x != null ? Number(x).toFixed(d) + '%' : '—';
+function mcap(x){
+  if (!x) return '—';
+  if (x >= 1e12) return `$${(x/1e12).toFixed(2)}T`;
+  if (x >= 1e9) return `$${(x/1e9).toFixed(1)}B`;
+  if (x >= 1e6) return `$${(x/1e6).toFixed(0)}M`;
+  return `$${x}`;
+}
+
+function render(note){
+  const key = document.getElementById('sortBy').value;
+  const big = 1e12;
+  const arr = [...results].sort((a,b) => {
+    if (key === 'pe') return (a.pe ?? big) - (b.pe ?? big);
+    if (key === 'pb') return (a.pb ?? big) - (b.pb ?? big);
+    if (key === 'dy') return (b.dy ?? -1) - (a.dy ?? -1);
+    if (key === 'roe') return (b.roe ?? -1e9) - (a.roe ?? -1e9);
     return (b.marketCap || 0) - (a.marketCap || 0);
   });
-
-  const count = sorted.length;
-  document.getElementById('resultCount').innerHTML =
-    count ? `<strong>${count}</strong> companies matched` : '';
-
-  if (count === 0) {
-    document.getElementById('mainContent').innerHTML = `
-      <div class="empty">
-        <div class="icon">🔍</div>
-        <p>No companies matched your criteria.<br>Try relaxing some filters.</p>
-      </div>`;
+  document.getElementById('count').innerHTML = `<strong>${arr.length}</strong> companies matched`;
+  const el = document.getElementById('content');
+  if (!arr.length) {
+    el.innerHTML = `${note ? `<div class="note">${esc(note)}</div>` : ''}<div class="state"><div class="ic">🔍</div><p>No companies matched your criteria.<br>Try relaxing some filters or scanning more companies.</p></div>`;
     return;
   }
-
-  const cards = sorted.map(c => buildCard(c)).join('');
-  document.getElementById('mainContent').innerHTML = `<div class="results-grid">${cards}</div>`;
+  el.innerHTML = (note ? `<div class="note">${esc(note)}</div>` : '') +
+    `<div class="grid">${arr.map(c => {
+      const i = results.indexOf(c);
+      return `<div class="card" onclick="openModal(${i})">
+        <div class="ch"><div><div class="tk">${esc(c.symbol)}</div><div class="nm">${esc(c.companyName)}</div></div>
+          ${c.sector ? `<span class="badge">${esc(c.sector)}</span>` : ''}</div>
+        ${c.description ? `<div class="desc">${esc(c.description)}</div>` : ''}
+        <div class="ms">
+          <div class="m"><b>P/E</b><span class="${c.pe != null && c.pe > 0 && c.pe < 15 ? 'good' : c.pe > 30 ? 'bad' : ''}">${n1(c.pe)}</span></div>
+          <div class="m"><b>P/B</b><span>${n2(c.pb)}</span></div>
+          <div class="m"><b>EV/EBITDA</b><span>${n1(c.ev)}</span></div>
+          <div class="m"><b>ROE</b><span class="${c.roe > 15 ? 'good' : ''}">${pc(c.roe)}</span></div>
+          <div class="m"><b>Net margin</b><span>${pc(c.npm)}</span></div>
+          <div class="m"><b>Div yield</b><span class="${c.dy > 4 ? 'good' : ''}">${pc(c.dy,2)}</span></div>
+        </div>
+        <div class="cf"><span class="pr">${c.price != null ? '$' + Number(c.price).toFixed(2) : '—'}</span><small>Mkt cap ${mcap(c.marketCap)}</small></div>
+      </div>`; }).join('')}</div>`;
 }
 
-function buildCard(c) {
-  const pe = c.peRatio ? c.peRatio.toFixed(1) : '—';
-  const pb = c.priceToBookRatio ? c.priceToBookRatio.toFixed(2) : '—';
-  const roe = c.returnOnEquity ? (c.returnOnEquity * 100).toFixed(1) + '%' : '—';
-  const dy = c.dividendYield ? (c.dividendYield * 100).toFixed(2) + '%' : '—';
-  const npm = c.netProfitMarginTTM ? (c.netProfitMarginTTM * 100).toFixed(1) + '%' : '—';
-  const ev = c.enterpriseValueEbitdaRatio ? c.enterpriseValueEbitdaRatio.toFixed(1) : '—';
-  const price = c.price ? `$${c.price.toFixed(2)}` : '—';
-  const change = c.changesPercentage;
-  const changeStr = change !== undefined ? (change >= 0 ? `+${change.toFixed(2)}%` : `${change.toFixed(2)}%`) : '—';
-  const changeClass = change >= 0 ? 'up' : 'down';
-  const mc = c.marketCap ? formatMC(c.marketCap) : '—';
-  const desc = c.description || c.industry || '';
-  const sector = c.sector || '';
-  const name = c.companyName || c.symbol;
-
-  const peClass = c.peRatio && c.peRatio < 15 ? 'good' : c.peRatio > 30 ? 'bad' : '';
-  const roeClass = c.returnOnEquity && c.returnOnEquity > 0.15 ? 'good' : '';
-
-  const safeDesc = desc.replace(/"/g, '&quot;').replace(/</g, '&lt;');
-  const safeJson = JSON.stringify(c).replace(/'/g, "\\'");
-
-  return `
-    <div class="card" onclick='openModal(${safeJson})'>
-      <div class="card-header">
-        <div>
-          <div class="ticker">${c.symbol}</div>
-          <div class="company-name">${name}</div>
-        </div>
-        ${sector ? `<span class="sector-badge">${sector}</span>` : ''}
-      </div>
-      ${desc ? `<div class="description">${safeDesc}</div>` : ''}
-      <div class="metrics">
-        <div class="metric">
-          <div class="metric-label">P/E</div>
-          <div class="metric-value ${peClass}">${pe}</div>
-        </div>
-        <div class="metric">
-          <div class="metric-label">P/B</div>
-          <div class="metric-value">${pb}</div>
-        </div>
-        <div class="metric">
-          <div class="metric-label">EV/EBITDA</div>
-          <div class="metric-value">${ev}</div>
-        </div>
-        <div class="metric">
-          <div class="metric-label">ROE</div>
-          <div class="metric-value ${roeClass}">${roe}</div>
-        </div>
-        <div class="metric">
-          <div class="metric-label">Net Margin</div>
-          <div class="metric-value">${npm}</div>
-        </div>
-        <div class="metric">
-          <div class="metric-label">Div Yield</div>
-          <div class="metric-value ${c.dividendYield > 0.04 ? 'good' : ''}">${dy}</div>
-        </div>
-      </div>
-      <div class="card-footer">
-        <div>
-          <span class="price">${price}</span>
-          <span class="change ${changeClass}" style="margin-left:8px">${changeStr}</span>
-        </div>
-        <span class="market-cap">Mkt Cap ${mc}</span>
-      </div>
+function openModal(i){
+  const c = results[i];
+  document.getElementById('mc').innerHTML = `
+    <h2>${esc(c.companyName)}</h2>
+    <div class="sub">${esc(c.symbol)} · ${esc(c.exchangeShortName || c.exchange || '')} · ${esc(c.sector || '')}${c.industry ? ' · ' + esc(c.industry) : ''}</div>
+    ${c.description ? `<div class="mdesc">${esc(c.description)}</div>` : ''}
+    <div class="mm">
+      <div><b>P/E</b><span>${n1(c.pe)}</span></div><div><b>P/B</b><span>${n2(c.pb)}</span></div><div><b>EV/EBITDA</b><span>${n1(c.ev)}</span></div>
+      <div><b>ROE</b><span>${pc(c.roe)}</span></div><div><b>Net margin</b><span>${pc(c.npm)}</span></div><div><b>Div yield</b><span>${pc(c.dy,2)}</span></div>
+      <div><b>Price</b><span>${c.price != null ? '$' + Number(c.price).toFixed(2) : '—'}</span></div><div><b>Mkt cap</b><span>${mcap(c.marketCap)}</span></div><div><b>Country</b><span style="font-size:13px">${esc(c.country || '—')}</span></div>
+    </div>
+    <div class="links">
+      <a href="https://finance.yahoo.com/quote/${encodeURIComponent(c.symbol)}" target="_blank" rel="noopener">↗ Yahoo Finance</a>
+      ${c.website ? `<a href="${esc(c.website)}" target="_blank" rel="noopener">↗ Company website</a>` : ''}
     </div>`;
+  document.getElementById('ov').classList.add('open');
 }
-
-function openModal(c) {
-  const pe = c.peRatio ? c.peRatio.toFixed(1) : '—';
-  const pb = c.priceToBookRatio ? c.priceToBookRatio.toFixed(2) : '—';
-  const ev = c.enterpriseValueEbitdaRatio ? c.enterpriseValueEbitdaRatio.toFixed(1) : '—';
-  const roe = c.returnOnEquity ? (c.returnOnEquity * 100).toFixed(1) + '%' : '—';
-  const npm = c.netProfitMarginTTM ? (c.netProfitMarginTTM * 100).toFixed(1) + '%' : '—';
-  const dy = c.dividendYield ? (c.dividendYield * 100).toFixed(2) + '%' : '—';
-  const mc = c.marketCap ? formatMC(c.marketCap) : '—';
-  const price = c.price ? `$${c.price.toFixed(2)}` : '—';
-  const change = c.changesPercentage;
-  const changeStr = change !== undefined ? (change >= 0 ? `▲ ${change.toFixed(2)}%` : `▼ ${Math.abs(change).toFixed(2)}%`) : '—';
-  const changeColor = change >= 0 ? 'var(--green)' : 'var(--red)';
-
-  document.getElementById('modalContent').innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
-      <div>
-        <h2>${c.companyName || c.symbol}</h2>
-        <div class="modal-sub">${c.symbol} · ${c.exchange || ''} · ${c.sector || ''} · ${c.industry || ''}</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:600">${price}</div>
-        <div style="font-family:'DM Mono',monospace;font-size:12px;color:${changeColor}">${changeStr} today</div>
-      </div>
-    </div>
-
-    ${c.description ? `<div class="modal-desc">${c.description}</div>` : ''}
-
-    <div class="modal-metrics">
-      <div class="modal-metric">
-        <div class="label">P/E Ratio</div>
-        <div class="value">${pe}</div>
-      </div>
-      <div class="modal-metric">
-        <div class="label">P/B Ratio</div>
-        <div class="value">${pb}</div>
-      </div>
-      <div class="modal-metric">
-        <div class="label">EV/EBITDA</div>
-        <div class="value">${ev}</div>
-      </div>
-      <div class="modal-metric">
-        <div class="label">ROE</div>
-        <div class="value">${roe}</div>
-      </div>
-      <div class="modal-metric">
-        <div class="label">Net Margin</div>
-        <div class="value">${npm}</div>
-      </div>
-      <div class="modal-metric">
-        <div class="label">Div Yield</div>
-        <div class="value">${dy}</div>
-      </div>
-      <div class="modal-metric">
-        <div class="label">Market Cap</div>
-        <div class="value">${mc}</div>
-      </div>
-      <div class="modal-metric">
-        <div class="label">Country</div>
-        <div class="value" style="font-size:13px">${c.country || '—'}</div>
-      </div>
-      <div class="modal-metric">
-        <div class="label">Exchange</div>
-        <div class="value" style="font-size:13px">${c.exchange || '—'}</div>
-      </div>
-    </div>
-
-    <a class="modal-link" href="https://financialmodelingprep.com/financial-summary/${c.symbol}" target="_blank">
-      ↗ View full profile on FMP
-    </a>
-  `;
-  document.getElementById('modal').classList.add('open');
-}
-
-function closeModal(e) {
-  if (e.target === document.getElementById('modal')) {
-    document.getElementById('modal').classList.remove('open');
-  }
-}
-
-function formatMC(v) {
-  if (v >= 1e12) return `$${(v / 1e12).toFixed(1)}T`;
-  if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`;
-  if (v >= 1e6) return `$${(v / 1e6).toFixed(0)}M`;
-  return `$${v}`;
-}
+function closeModal(){ document.getElementById('ov').classList.remove('open'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 </script>
 </body>
 </html>
